@@ -1,0 +1,152 @@
+x-usage: &default-usage
+  # Max Usage Limits
+  mem_limit: ${MEM_LIMIT:-2G} # Override per container if necessary
+  memswap_limit: ${MEM_SWAP_LIMIT:-2.5G}
+  mem_reservation: ${MEM_RESERVATION:-64M}
+  pids_limit: ${PIDS_LIMIT:-200}
+  cpus: ${CPUS_LIMIT:-2} # Set below the total number of cores, for example 3.5 for 4 cores
+
+x-restart: &default-restart
+  # Restart Settings
+  stop_grace_period: ${RESTART_GRACE:-1m}
+  restart: ${RESTART_MODE:-unless-stopped}
+
+x-security: &default-security
+  # Configure User and Security Opts
+  user: ${PUID:-1000}:${PGID:-1000}
+  security_opt:
+   - no-new-privileges=true
+
+x-logging: &default-logging
+  # Configure Logging
+  logging:
+    options:
+      max-size: ${LOG_MAX_SIZE:-10m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+x-base: &default-base
+  <<: [*default-usage, *default-restart, *default-security, *default-logging]
+
+x-healthcheck: &default-healthcheck
+  interval: ${HEALTH_INTERVAL:-60s}
+  timeout: ${HEALTH_TIMEOUT:-10s}
+  retries: ${HEALTH_RETRIES:-5}
+  start_period: ${HEALTH_START:-10s}
+
+x-environment: &default-environment
+  TZ: ${TZ:-America/Chicago}
+  PUID: ${PUID:-1000}
+  PGID: ${PGID:-1000}
+ 
+# Compose Project Name
+name: traefik
+
+services:
+  traefik:
+    <<: *default-base
+    image: traefik:${TRAEFIK_VESION:-latest}
+    hostname: ${COMPOSE_PROJECT_NAME}-${SERVER_NAME}.${DOMAIN_NAME}
+    container_name: ${COMPOSE_PROJECT_NAME}-${SERVER_NAME}
+    command:
+      - "--providers.file.filename=/etc/traefik/traefik.yml"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8443:8443"
+    environment:
+      <<: *default-environment
+      CF_API_EMAIL: ${CF_API_EMAIL}
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+      LE_EMAIL: letsencrypt@${DOMAIN_NAME}
+    labels:
+      - "komodo.skip" # Prevent Komodo from stopping with StopAllContainers
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.traefik.rule=Host(`${COMPOSE_PROJECT_NAME}-${SERVER_NAME}.${DOMAIN_NAME}`) || Host(`${SERVER_NAME}.${DOMAIN_NAME}`) || Host(`${COMPOSE_PROJECT_NAME}.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik.entrypoints=dashboard"  # Defined in traefik.yaml
+      ## Services - API
+      - "traefik.http.routers.traefik.service=api@internal"
+      #### Migrate individual service cert resolver to global resolution in traefik.yaml
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.traefik.tls.domains[0].main=$DOMAIN_NAME"
+      - "traefik.http.routers.traefik.tls.domains[0].sans=*.$DOMAIN_NAME"
+      ## Default TLS Cert
+      - "traefik.tls.stores.default.defaultGeneratedCert.resolver=letsencrypt"
+      - "traefik.tls.stores.default.defaultGeneratedCert.domain.main=$DOMAIN_NAME"
+      - "traefik.tls.stores.default.defaultGeneratedCert.domain.sans=*.$DOMAIN_NAME"
+      ## WUD Labels
+      #- 'wud.tag.include=^\d+\.\d+\.\d+$$'
+      #- 'wud.link.template=https://github.com/traefik/traefik/releases/tag/v$${major}.$${minor}.$${patch}'
+    volumes:
+      - "./traefik-config/traefik.yml:/etc/traefik/traefik.yml"
+      - "./traefik-config/rules:/etc/traefik/rules/"
+      - "./traefik-logs:/etc/traefik/log/"
+      - "./traefik-data:/etc/traefik/certs/"
+    networks:
+      - public
+      - private
+      - socket_proxy
+    depends_on:
+      socket-proxy:
+          condition: service_healthy
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      <<: *default-healthcheck
+
+  socket-proxy:
+    <<: [*default-usage, *default-restart, *default-logging]
+    image: lscr.io/linuxserver/socket-proxy:${SOCKET_PROXY_VESION:-latest}
+    container_name: "${COMPOSE_PROJECT_NAME}-socket-proxy"
+    environment:
+      <<: *default-environment
+      ALLOW_START: 0 #optional
+      ALLOW_STOP: 0 #optional
+      ALLOW_RESTARTS: 0 #optional
+      AUTH: 0 #optional
+      BUILD: 0 #optional
+      COMMIT: 0 #optional
+      CONFIGS: 0 #optional
+      CONTAINERS: 1 #optional
+      DISABLE_IPV6: 0 #optional
+      DISTRIBUTION: 0 #optional
+      EVENTS: 1 #optional
+      EXEC: 0 #optional
+      IMAGES: 0 #optional
+      INFO: 1 #optional
+      LOG_LEVEL: info #optional
+      NETWORKS: 1 #optional
+      NODES: 1 #optional
+      PING: 1 #optional
+      PLUGINS: 0 #optional
+      POST: 0 #optional
+      SECRETS: 0 #optional
+      SERVICES: 1 #optional
+      SESSION: 0 #optional
+      SWARM: 0 #optional
+      SYSTEM: 0 #optional
+      TASKS: 1 #optional
+      VERSION: 1 #optional
+      VOLUMES: 0 #optional
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    userns_mode: "host"
+    networks:
+      - socket_proxy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:2375/version"]
+      <<: *default-healthcheck
+    read_only: true
+    tmpfs:
+      - /run
+
+networks:
+  socket_proxy:
+    internal: true
+    driver_opts:
+      encrypted: "true"
+  public:
+    name: traefik_public
+  private:
+    name: traefik_private
+    internal: true

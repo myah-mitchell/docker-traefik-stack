@@ -1,0 +1,166 @@
+################################################################
+# Global configuration - https://doc.traefik.io/traefik/reference/static-configuration/file/
+################################################################
+
+global:
+  # Periodically check if a new version has been released.
+  checkNewVersion: true
+  # Periodically send anonymous usage statistics.
+  sendAnonymousUsage: false
+
+################################################################
+# Logs - https://doc.traefik.io/traefik/observability/logs/
+################################################################
+log:
+  level: INFO # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: common # common, json, logfmt
+  noColor: true # Recommended to be true when using common
+  maxSize: 100 # In megabytes
+  compress: true # gzip compression when rotating
+  filePath: /etc/traefik/log/traefik.log
+
+################################################################
+# Access logs - https://doc.traefik.io/traefik/observability/access-logs/
+################################################################
+accesslog:
+  format: common # common, json, logfmt
+  addInternals: true  # things like ping@internal
+  filePath: /etc/traefik/log/access.log # In the Common Log Format (CLF) by default
+  bufferingSize: 100 # Number of log lines
+  fields:
+    names:
+      StartUTC: drop  # Write logs in Container Local Time instead of UTC
+  filters:
+    statusCodes:
+      - "204-299"
+      - "400-499"
+      - "500-599"
+
+################################################################
+# API and Dashboard
+################################################################
+api:
+  dashboard: true
+  # Rely on api@internal and Traefik with Middleware to control access
+  # insecure: true
+
+################################################################
+# Entrypoints - https://doc.traefik.io/traefik/routing/entrypoints/
+################################################################
+entryPoints:
+  http:
+    address: :80
+    # -- (Optional) Redirect all HTTP to HTTPS
+    http:
+      redirections:
+        entryPoint:
+          to: https
+          scheme: https
+  https:
+    address: :443
+    # Setup default router settings
+    asDefault: true
+    http:
+      tls:
+        options: tls-opts@file
+        certResolver: letsencrypt
+    # Setup which headers to forward
+    forwardedHeaders:
+      trustedIPs:
+        # Cloudflare (https://www.cloudflare.com/ips-v4)
+        - "173.245.48.0/20"
+        - "103.21.244.0/22"
+        - "103.22.200.0/22"
+        - "103.31.4.0/22"
+        - "141.101.64.0/18"
+        - "108.162.192.0/18"
+        - "190.93.240.0/20"
+        - "188.114.96.0/20"
+        - "197.234.240.0/22"
+        - "198.41.128.0/17"
+        - "162.158.0.0/15"
+        - "104.16.0.0/13"
+        - "104.24.0.0/14"
+        - "172.64.0.0/13"
+        - "131.0.72.0/22"
+        # Local IPs
+        - "127.0.0.1/32"
+        - "10.0.0.0/8"
+        - "192.168.0.0/16"
+        - "172.16.0.0/12"
+  ping:
+    address: :88
+  dashboard:
+    address: :8443
+
+
+################################################################
+# Healthcheck - https://doc.traefik.io/traefik/reference/install-configuration/observability/healthcheck/
+################################################################
+ping:
+  entryPoint: "ping"
+
+################################################################
+# Transports - https://doc.traefik.io/traefik/reference/routing-configuration/http/load-balancing/service
+################################################################
+# Skip verifying if a service has a self signed cert on the IP.  
+serversTransports:
+  selfsigned:
+    insecureSkipVerify: true
+
+################################################################
+# Providers - https://doc.traefik.io/traefik/providers/docker/
+################################################################
+
+providers:
+  # Configuration reload frequency
+  providersThrottleDuration: 2s
+
+  # Folder with dynamic configuration
+  file:
+    directory: /etc/traefik/rules
+    watch: true
+
+  # Docker provider for connecting all apps that are inside of the docker network
+  docker:
+    watch: true
+    network: traefik_public
+    exposedByDefault: false
+    endpoint: tcp://traefik-socket-proxy:2375
+
+################################################################
+# Let's Encrypt (ACME)
+################################################################
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      storage: /etc/traefik/certs/acme-prod.json
+      dnsChallenge:
+        provider: cloudflare
+        delayBeforeCheck: 10 #Optional to wait x second before checking with the DNS Server
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+#  letsencrypt-staging:
+#    acme:
+#      storage: /etc/traefik/certs/acme-staging.json
+#      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+#      dnsChallenge:
+#        provider: cloudflare
+#        delayBeforeCheck: 10 #Optional to wait x second before checking with the DNS Server
+#        resolvers:
+#          - "1.1.1.1:53"
+#          - "8.8.8.8:53"
+#  letsencrypt-http:
+#    acme:
+#      storage: /etc/traefik/certs/acme-http-prod.json
+#      # tlsChallenge: {}
+#      httpChallenge:
+#        entryPoint: http
+#  letsencrypt-http-staging:
+#    acme:
+#      storage: /etc/traefik/certs/acme-http-staging.json
+#      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+#      httpChallenge:
+#        entryPoint: http
