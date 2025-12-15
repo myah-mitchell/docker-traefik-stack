@@ -23,7 +23,7 @@ http:
         stsIncludeSubdomains: true
         stsPreload: true
         forceSTSHeader: true
-        customFrameOptionsValue: "allow-from https:{{env "DOMAINNAME"}}" #CSP takes care of this but may be needed for organizr.
+        customFrameOptionsValue: "allow-from https:{{env "DOMAIN_NAME"}}" #CSP takes care of this but may be needed for organizr.
         # customFrameOptionsValue: SAMEORIGIN # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
         contentTypeNosniff: true
         browserXssFilter: true
