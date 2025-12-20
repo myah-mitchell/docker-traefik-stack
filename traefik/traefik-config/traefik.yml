@@ -124,7 +124,7 @@ providers:
   # Docker provider for connecting all apps that are inside of the docker network
   docker:
     watch: true
-    network: traefik_public
+    network: proxy
     exposedByDefault: false
     endpoint: tcp://traefik.socket-proxy:2375
 
