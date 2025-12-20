@@ -126,7 +126,7 @@ providers:
     watch: true
     network: traefik_public
     exposedByDefault: false
-    endpoint: tcp://traefik-socket-proxy:2375
+    endpoint: tcp://traefik.socket-proxy:2375
 
 ################################################################
 # Let's Encrypt (ACME)
