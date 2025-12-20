@@ -59,32 +59,22 @@ services:
       CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
       LE_EMAIL: letsencrypt@${SUB_DOMAIN_NAME}${DOMAIN_NAME}  
       DOMAIN_NAME: ${SUB_DOMAIN_NAME}${DOMAIN_NAME}  
-    labels:
-      - "komodo.skip" # Prevent Komodo from stopping with StopAllContainers
+    labels: ## Traefik Labels
       - "traefik.enable=true"
       ## HTTP Routers
       - "traefik.http.routers.traefik.rule=
-        Host(`${SERVICE_NAME}.${DOMAIN_NAME}`) ||
         Host(`${SERVICE_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}`) ||
         Host(`${SERVICE_NAME}.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}`) ||
         Host(`${PROJECT_NAME}.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik.entrypoints=dashboard"  # Defined in traefik.yaml
       ## Services - API
       - "traefik.http.routers.traefik.service=api@internal"
-      #### Migrate individual service cert resolver to global resolution in traefik.yaml
-      - "traefik.http.routers.traefik.tls=true"
-      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.traefik.tls.domains[0].main=$DOMAIN_NAME"
-      - "traefik.http.routers.traefik.tls.domains[1].sans=*.$DOMAIN_NAME"
-      - "traefik.http.routers.traefik.tls.domains[2].sans=*.$SUB_DOMAIN_NAME$DOMAIN_NAME"
       ## Default TLS Cert
       - "traefik.tls.stores.default.defaultGeneratedCert.resolver=letsencrypt"
       - "traefik.tls.stores.default.defaultGeneratedCert.domain.main=$DOMAIN_NAME"
-      - "traefik.tls.stores.default.defaultGeneratedCert.domain.sans=*.$DOMAIN_NAME"
-      - "traefik.tls.stores.default.defaultGeneratedCert.domain.sans=*.$SUB_DOMAIN_NAME$DOMAIN_NAME"
-      ## WUD Labels
-      #- 'wud.tag.include=^\d+\.\d+\.\d+$$'
-      #- 'wud.link.template=https://github.com/traefik/traefik/releases/tag/v$${major}.$${minor}.$${patch}'
+      - "traefik.tls.stores.default.defaultGeneratedCert.domain.sans=*.$DOMAIN_NAME,*.$SUB_DOMAIN_NAME$DOMAIN_NAME"
+      ## Komodo Labels
+      - "komodo.skip" # Prevent Komodo from stopping with StopAllContainers
     volumes:
       - "./traefik-config/traefik.yml:/etc/traefik/traefik.yml"
       - "./traefik-config/rules:/etc/traefik/rules/"

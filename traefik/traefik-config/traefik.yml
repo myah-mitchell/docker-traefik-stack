@@ -92,7 +92,10 @@ entryPoints:
     address: :88
   dashboard:
     address: :8443
-
+    http:
+      tls:
+        options: tls-opts@file
+        certResolver: letsencrypt
 
 ################################################################
 # Healthcheck - https://doc.traefik.io/traefik/reference/install-configuration/observability/healthcheck/
