@@ -155,7 +155,7 @@ networks:
     driver_opts:
       encrypted: "true"
   frontend:
-    name: ${TRAEFIK_NETWORK}
+    name: ${PROXY_NETWORK}
   backend:
-    name: ${TRAEFIK_NETWORK}_private
+    name: ${PROXY_NETWORK}_private
     internal: true
