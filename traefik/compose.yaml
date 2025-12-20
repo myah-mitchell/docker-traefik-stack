@@ -76,13 +76,11 @@ services:
       - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik.tls.domains[0].main=$DOMAIN_NAME"
       - "traefik.http.routers.traefik.tls.domains[1].sans=*.$DOMAIN_NAME"
-      - "traefik.http.routers.traefik.tls.domains[2].sans=$SUB_DOMAIN_NAME$DOMAIN_NAME"
-      - "traefik.http.routers.traefik.tls.domains[3].sans=*.$SUB_DOMAIN_NAME$DOMAIN_NAME"
+      - "traefik.http.routers.traefik.tls.domains[2].sans=*.$SUB_DOMAIN_NAME$DOMAIN_NAME"
       ## Default TLS Cert
       - "traefik.tls.stores.default.defaultGeneratedCert.resolver=letsencrypt"
       - "traefik.tls.stores.default.defaultGeneratedCert.domain.main=$DOMAIN_NAME"
       - "traefik.tls.stores.default.defaultGeneratedCert.domain.sans=*.$DOMAIN_NAME"
-      - "traefik.tls.stores.default.defaultGeneratedCert.domain.sans=$SUB_DOMAIN_NAME$DOMAIN_NAME"
       - "traefik.tls.stores.default.defaultGeneratedCert.domain.sans=*.$SUB_DOMAIN_NAME$DOMAIN_NAME"
       ## WUD Labels
       #- 'wud.tag.include=^\d+\.\d+\.\d+$$'
