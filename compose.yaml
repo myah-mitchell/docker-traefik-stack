@@ -91,6 +91,23 @@ services:
       test: ["CMD", "traefik", "healthcheck", "--ping"]
       <<: *default-healthcheck
 
+  traefik-kop:
+    <<: *default-base
+    image: "ghcr.io/jittering/traefik-kop:latest"
+    environment:
+      <<: *default-environment
+      REDIS_ADDR: ${REDIS_SERVER}:6379
+      #BIND_IP: ${SERVER_IP}
+      DOCKER_PERFIX: kop.public
+      DOCKER_HOST: tcp://${PROJECT_NAME}.socket-proxy:2375
+    networks:
+      - frontend
+      - backend
+      - socket_proxy
+    #healthcheck:
+    #  test: ["CMD", "wget", "--spider", "http://localhost:2375/version"]
+    #  <<: *default-healthcheck
+
   socket-proxy:
     <<: [*default-usage, *default-restart, *default-logging]
     image: lscr.io/linuxserver/socket-proxy:${SOCKET_PROXY_VERSION:-latest}
