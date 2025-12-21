@@ -98,6 +98,7 @@ services:
       <<: *default-environment
       REDIS_ADDR: ${REDIS_SERVER}:6379
       REDIS_PASS: ${REDIS_PASSWORD}
+      KOP_POLL_INTERVAL: 10
       #BIND_IP: ${SERVER_IP}
       DOCKER_PERFIX: kop.public
       DOCKER_HOST: tcp://${PROJECT_NAME}.socket-proxy:2375
