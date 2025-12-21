@@ -98,7 +98,6 @@ services:
       <<: *default-environment
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes --requirepass vv
     command: redis-server --appendonly yes --replicaof ${REDIS_SERVER} 6379 --masterauth ${REDIS_PASSWORD} --requirepass ${REDIS_PASSWORD}
     networks:
       - frontend
