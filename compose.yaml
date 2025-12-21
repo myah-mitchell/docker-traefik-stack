@@ -79,7 +79,7 @@ services:
       - "./traefik-config/traefik.yml:/etc/traefik/traefik.yml"
       - "./traefik-config/rules:/etc/traefik/rules/"
       #- "./traefik-logs:/etc/traefik/log/"
-      - "cert-data:/etc/traefik/certs/"
+      - "${DOCKER_VOLUMES}/${PROJECT_NAME}/cert-data:/etc/traefik/certs/"
     networks:
       - frontend
       - backend
