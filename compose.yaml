@@ -91,6 +91,21 @@ services:
       test: ["CMD", "traefik", "healthcheck", "--ping"]
       <<: *default-healthcheck
 
+  redis:
+    image: redis:${REDIS_VERSION:-latest}
+    container_name: "${PROJECT_NAME}.socket-proxy"
+    environment:
+      <<: *default-environment
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass vv
+    command: redis-server --appendonly yes --replicaof ${REDIS_SERVER} 6379 --masterauth ${REDIS_PASSWORD} --requirepass ${REDIS_PASSWORD}
+    networks:
+      - frontend
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      <<: *default-healthcheck
+
   socket-proxy:
     <<: [*default-usage, *default-restart, *default-logging]
     image: lscr.io/linuxserver/socket-proxy:${SOCKET_PROXY_VERSION:-latest}
