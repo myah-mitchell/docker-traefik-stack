@@ -137,11 +137,6 @@ services:
     tmpfs:
       - /run
 
-volumes:
-  # Postgres
-  cert-data:
-    name: ${PROJECT_NAME}_cert_data
-
 networks:
   socket_proxy:
     internal: true
