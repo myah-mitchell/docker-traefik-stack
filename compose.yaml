@@ -93,7 +93,7 @@ services:
 
   redis:
     image: redis:${REDIS_VERSION:-latest}
-    container_name: "${PROJECT_NAME}.socket-proxy"
+    container_name: "${PROJECT_NAME}.redis"
     environment:
       <<: *default-environment
     ports:
