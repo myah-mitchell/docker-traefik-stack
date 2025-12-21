@@ -133,7 +133,7 @@ providers:
 
   # Docker Redis provider for storing proxy labels from traefik-kop hosts
   redis:
-    endpoint:
+    endpoints:
       - "redis:6379"
 
 ################################################################
