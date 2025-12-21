@@ -13,11 +13,11 @@ global:
 ################################################################
 log:
   level: INFO # DEBUG, INFO, WARNING, ERROR, CRITICAL
-  format: common # common, json, logfmt
-  noColor: true # Recommended to be true when using common
-  maxSize: 100 # In megabytes
-  compress: true # gzip compression when rotating
-  filePath: /etc/traefik/log/traefik.log
+  #format: common # common, json, logfmt
+  #noColor: true # Recommended to be true when using common
+  #maxSize: 100 # In megabytes
+  #compress: true # gzip compression when rotating
+  #filePath: /etc/traefik/log/traefik.log
 
 ################################################################
 # Access logs - https://doc.traefik.io/traefik/observability/access-logs/

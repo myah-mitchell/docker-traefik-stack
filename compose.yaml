@@ -78,8 +78,8 @@ services:
     volumes:
       - "./traefik-config/traefik.yml:/etc/traefik/traefik.yml"
       - "./traefik-config/rules:/etc/traefik/rules/"
-      - "./traefik-logs:/etc/traefik/log/"
-      - "./traefik-data:/etc/traefik/certs/"
+      #- "./traefik-logs:/etc/traefik/log/"
+      - "cert-data:/etc/traefik/certs/"
     networks:
       - frontend
       - backend
@@ -136,6 +136,11 @@ services:
     read_only: true
     tmpfs:
       - /run
+
+volumes:
+  # Postgres
+  cert-data:
+    name: ${PROJECT_NAME}_cert_data
 
 networks:
   socket_proxy:
