@@ -134,7 +134,7 @@ providers:
   # Docker Redis provider for storing proxy labels from traefik-kop hosts
   redis:
     endpoint:
-      -"redis:6379"
+      - "redis:6379"
 
 ################################################################
 # Let's Encrypt (ACME)
