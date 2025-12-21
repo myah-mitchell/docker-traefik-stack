@@ -131,11 +131,6 @@ providers:
     exposedByDefault: false
     endpoint: tcp://traefik.socket-proxy:2375
 
-  # Docker Redis provider for storing proxy labels from traefik-kop hosts
-  redis:
-    endpoint:
-      -"redis:6379"
-
 ################################################################
 # Let's Encrypt (ACME)
 ################################################################
