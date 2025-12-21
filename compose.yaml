@@ -78,7 +78,7 @@ services:
     volumes:
       - "./traefik-config/traefik.yml:/etc/traefik/traefik.yml"
       - "./traefik-config/rules:/etc/traefik/rules/"
-      #- "./traefik-logs:/etc/traefik/log/"
+      - "${DOCKER_VOLUMES}/${PROJECT_NAME}/traefik-logs:/etc/traefik/log/"
       - "${DOCKER_VOLUMES}/${PROJECT_NAME}/cert-data:/etc/traefik/certs/"
     networks:
       - frontend
