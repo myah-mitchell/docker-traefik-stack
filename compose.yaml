@@ -67,6 +67,8 @@ services:
         Host(`${SERVICE_NAME}.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}`) ||
         Host(`${PROJECT_NAME}.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik.entrypoints=dashboard"  # Defined in traefik.yaml
+      ## Middlewares 
+      - "traefik.http.routers.traefik.middlewares=middleware-error-pages"
       ## Services - API
       - "traefik.http.routers.traefik.service=api@internal"
       ## Default TLS Cert
@@ -89,6 +91,33 @@ services:
           condition: service_healthy
     healthcheck:
       test: ["CMD", "traefik", "healthcheck", "--ping"]
+      <<: *default-healthcheck
+
+  error-pages:
+    <<: *default-base
+    image: tarampampam/error-pages:2.26.0
+    container_name: ${PROJECT_NAME}.error-pages
+    environment:
+      <<: *default-environment
+      TEMPLATE_NAME: lost-in-space
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${PROXY_NETWORK}
+      # use as "fallback" for any non-registered services (with priority below normal)
+      - traefik.http.routers.error-pages-rtr.rule=HostRegexp(`.+`)
+      - traefik.http.routers.error-pages-rtr.priority=10
+      # should say that all of your services work on https
+      - traefik.http.routers.error-pages-rtr.middlewares=middlewares-error-pages
+      # "errors" middleware settings
+      - traefik.http.middlewares.middlewares-error-pages.errors.status=400-599
+      - traefik.http.middlewares.middlewares-error-pages.errors.service=error-pages-svc
+      - traefik.http.middlewares.middlewares-error-pages.errors.query=/{status}.html
+      # define service properties
+      - traefik.http.services.error-pages-svc.loadbalancer.server.port=8080
+    networks:
+      - frontend
+    healthcheck:
+      #test: ["CMD", "", ""]
       <<: *default-healthcheck
 
   socket-proxy:
