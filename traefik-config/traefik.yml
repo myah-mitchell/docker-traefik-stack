@@ -56,17 +56,8 @@ entryPoints:
         entryPoint:
           to: https
           scheme: https
-  https:
-    address: :443
-    # Setup default router settings
-    asDefault: true
-    http:
-      tls:
-        options: tls-opts@file
-        certResolver: letsencrypt
-    # Setup which headers to forward
     forwardedHeaders:
-      trustedIPs:
+      trustedIPs: &trustedIps
         # Cloudflare (https://www.cloudflare.com/ips-v4)
         - "173.245.48.0/20"
         - "103.21.244.0/22"
@@ -88,6 +79,18 @@ entryPoints:
         - "10.0.0.0/8"
         - "192.168.0.0/16"
         - "172.16.0.0/12"
+  https:
+    address: :443
+    # Setup default router settings
+    asDefault: true
+    http:
+      tls:
+        options: tls-opts@file
+        certResolver: letsencrypt
+    # Setup which headers to forward
+    forwardedHeaders:
+      # Reuse the list of Cloudflare's public IPs and local IPs from above
+      trustedIPs: *trustedIps
   ping:
     address: :88
   dashboard:
