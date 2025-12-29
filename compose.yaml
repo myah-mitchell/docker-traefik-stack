@@ -169,10 +169,11 @@ services:
       <<: *default_healthcheck
 
   redis:
+    <<: [*limits, *restart, *security, *logging]
     image: redis:${REDIS_VERSION:-latest}
     container_name: "${PROJECT_NAME}.redis"
     environment:
-      <<: *default-environment
+      <<: *default_environment
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes --replicaof ${REDIS_SERVER} 6379 --masterauth ${REDIS_PASSWORD}
@@ -180,7 +181,7 @@ services:
       - frontend
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-      <<: *default-healthcheck
+      <<: *default_healthcheck
 
   socket-proxy:
     <<: [*limits, *restart, *security, *logging]
