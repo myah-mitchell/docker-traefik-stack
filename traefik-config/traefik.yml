@@ -132,7 +132,7 @@ providers:
     watch: true
     network: proxy
     exposedByDefault: false
-    endpoint: tcp://traefik.socket-proxy:2375
+    endpoint: tcp://traefik-socket-proxy:2375
 
 ################################################################
 # Let's Encrypt (ACME)

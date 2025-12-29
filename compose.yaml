@@ -118,8 +118,6 @@ services:
         Host(`${SERVICE_NAME}.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}`) ||
         Host(`${PROJECT_NAME}.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik.entrypoints=dashboard"  # Defined in traefik.yaml
-      ## Middlewares 
-      - "traefik.http.routers.traefik.middlewares=middleware-error-pages"
       ## Services - API
       - "traefik.http.routers.traefik.service=api@internal"
       ## Default TLS Cert
@@ -135,10 +133,12 @@ services:
       - socket_proxy
     depends_on:
       socket-proxy:
-          condition: service_healthy
+        condition: service_healthy
+      error-pages:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "traefik", "healthcheck", "--ping"]
-      <<: *default-healthcheck
+      <<: *default_healthcheck
 
   error-pages:
     <<: [*limits, *restart, *security, *user, *logging]
@@ -150,7 +150,7 @@ services:
       TEMPLATE_NAME: lost-in-space
     labels:
       - traefik.enable=true
-      - traefik.docker.network=${PROXY_NETWORK}
+      - traefik.docker.network=traefik_backend
       # use as "fallback" for any non-registered services (with priority below normal)
       - traefik.http.routers.error-pages-rtr.rule=HostRegexp(`.+`)
       - traefik.http.routers.error-pages-rtr.priority=10
@@ -166,7 +166,7 @@ services:
       - backend
     healthcheck:
       #test: ["CMD", "", ""]
-      <<: *default-healthcheck
+      <<: *default_healthcheck
 
   socket-proxy:
     <<: [*limits, *restart, *security, *logging]
@@ -213,4 +213,4 @@ services:
       - /run
     healthcheck:
       test: ["CMD", "wget", "--spider", "http://localhost:2375/version"]
-      <<: *default-healthcheck
+      <<: *default_healthcheck
