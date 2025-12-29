@@ -1,4 +1,4 @@
-# Docker Authentik Stack
+# Docker Traefik Stack
 
 
 ## Create needed folders
