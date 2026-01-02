@@ -4,7 +4,6 @@ http:
       chain:
         middlewares:
           - middlewares-bouncer
-          - middlewares-realip #This middleware can't be first
           - middlewares-rate-limit
           - middlewares-secure-headers
           - middlewares-compress

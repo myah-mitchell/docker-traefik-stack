@@ -3,7 +3,6 @@ http:
     chain-authentik:
       chain:
         middlewares:
-          - middlewares-realip
           - middlewares-bouncer
           - middlewares-rate-limit
           - middlewares-secure-headers
