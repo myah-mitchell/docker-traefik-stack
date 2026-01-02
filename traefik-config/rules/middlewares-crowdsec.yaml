@@ -17,7 +17,7 @@ http:
           crowdsecAppsecFailureBlock: true
           crowdsecAppsecUnreachableBlock: true
           crowdsecLapiKey: {{env "CROWDSEC_LAPI_KEY"}}
-          crowdsecLapiHost: {{env "CROWDSEC_LAPI_URL"}}
+          crowdsecLapiHost: {{env "CROWDSEC_LAPI_HOST"}}
           crowdsecLapiScheme: http
           crowdsecLapiTLSInsecureVerify: false
 #         forwardedHeadersTrustedIPs:
