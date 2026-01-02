@@ -135,6 +135,15 @@ providers:
     endpoint: tcp://traefik-socket-proxy:2375
 
 ################################################################
+# Plugins
+################################################################
+experimental:
+  plugins:
+    bouncer: # The name must match the middleware spec name
+      moduleName: github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      version: v1.4.6
+
+################################################################
 # Let's Encrypt (ACME)
 ################################################################
 
