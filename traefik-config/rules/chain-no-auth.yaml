@@ -3,6 +3,8 @@ http:
     chain-no-auth:
       chain:
         middlewares:
+          - middlewares-realip
+          - middlewares-bouncer
           - middlewares-rate-limit
           - middlewares-secure-headers
           - middlewares-compress
