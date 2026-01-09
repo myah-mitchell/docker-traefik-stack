@@ -89,5 +89,5 @@ networks:
 
 # Include Agent services with server
 include:
-  - ./traefik/compose.yaml
+  - ./traefik-redis/compose.yaml
   - ./redis-agent/compose.yaml
