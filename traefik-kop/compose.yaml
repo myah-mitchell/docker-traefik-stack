@@ -99,7 +99,7 @@ services:
       REDIS_PASS: ${REDIS_PASSWORD}
       KOP_HOSTNAME: ${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}
       KOP_POLL_INTERVAL: 10
-      #NAMESPACE: public
+      NAMESPACE: public
       BIND_IP: ${SERVER_IP}
       DOCKER_PREFIX: kop-public
       DEBUG: 1
