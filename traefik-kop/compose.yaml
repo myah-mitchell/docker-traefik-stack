@@ -101,7 +101,7 @@ services:
       KOP_POLL_INTERVAL: 10
       NAMESPACE: public
       BIND_IP: ${SERVER_IP}
-      DOCKER_PREFIX: kop-public
+      DOCKER_PREFIX: kop.public
       DEBUG: 1
       DOCKER_HOST: tcp://${PROJECT_NAME}-socket-proxy:2375
     networks:
