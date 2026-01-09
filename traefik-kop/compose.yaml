@@ -103,7 +103,7 @@ services:
       BIND_IP: ${SERVER_IP}
       DOCKER_PREFIX: kop-public
       DEBUG: 1
-      DOCKER_HOST: tcp://${PROJECT_NAME}.socket-proxy:2375
+      DOCKER_HOST: tcp://${PROJECT_NAME}-socket-proxy:2375
     networks:
     - frontend
     - backend
