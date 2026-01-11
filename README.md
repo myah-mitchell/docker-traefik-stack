@@ -8,9 +8,12 @@ Note this is still early in design and lots of this will change before being mer
 mkdir -p /opt/docker/volumes/traefik/traefik-logs
 mkdir -p /opt/docker/volumes/traefik/cert-data
 mkdir -p /opt/docker/volumes/traefik/traefik-plugins
-chmod -R 770 /opt/docker/volumes/traefik/*
-sudo chown -R $USER:101000 /opt/docker/volumes/traefik
-sudo chown -R 101000:101000 /opt/docker/volumes/traefik/*
+mkdir -p /opt/docker/volumes/traefik/vlagent
+mkdir -p /opt/docker/volumes/traefik/vmagent
+mkdir -p /opt/docker/volumes/traefik/vector
+chmod 750 /opt/docker/volumes/traefik/  k
+sudo chown $USER:101000 /opt/docker/volumes/traefik
+sudo chown 101000:101000 /opt/docker/volumes/traefik/*
 ```
 
 ## How to run the service
