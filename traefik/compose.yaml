@@ -171,6 +171,26 @@ services:
       #test: ["CMD", "", ""]
       <<: *default_healthcheck
 
+  logrotate:
+    <<: [*limits, *restart, *security, *logging]
+    image: samuelrunggaldier/logrotate:${LOGROTATE_VERSION:-latest}
+    hostname: ${PROJECT_NAME}-logrotate.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}
+    container_name: ${PROJECT_NAME}-logrotate
+    environment:
+      <<: [*environment_tz, *environment_user]
+      LOGS_PATH: "/logs/*.log"
+      TRIGGER_INTERVAL: daily
+      MAX_SIZE: 100M
+      MAX_BACKUPS: 3
+      DELAYCOMPRESS: "true"
+    volumes:
+      - "${DOCKER_VOLUMES}/${PROJECT_NAME}/traefik-logs:/log/"
+    networks:
+      - backend
+    healthcheck:
+      #test: ["CMD", "", ""]
+      <<: *default_healthcheck
+
   socket-proxy:
     <<: [*limits, *restart, *security, *logging]
     image: lscr.io/linuxserver/socket-proxy:${SOCKET_PROXY_VERSION:-latest}
