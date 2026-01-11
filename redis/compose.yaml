@@ -91,15 +91,13 @@ services:
   redis:
     <<: [*limits, *restart, *security, *logging]
     image: redis:${REDIS_VERSION:-latest}
-    hostname: ${PROJECT_NAME}-redis.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME} 
+    hostname: ${PROJECT_NAME}-redis.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}  
     container_name: "${PROJECT_NAME}-redis"
     environment:
       <<: *default_environment
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes --replicaof ${REDIS_SERVER} 6379 --masterauth ${REDIS_PASSWORD}
+    command: redis-server --appendonly yes
     networks:
-      - frontend
+      - backend
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       <<: *default_healthcheck

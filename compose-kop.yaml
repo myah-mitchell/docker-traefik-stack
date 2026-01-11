@@ -87,7 +87,23 @@ networks:
     driver_opts:
       encrypted: "true"
 
-# Include Agent services with server
-include:
-  - ./traefik/compose.yaml
-  - ./traefik-kop/compose.yaml
+services:
+  traefik:
+    extends: 
+      file: ./traefik/compose.yaml
+      service: traefik
+
+  error-pages:
+    extends: 
+      file: ./traefik/compose.yaml
+      service: error-pages
+
+  socket-proxy:
+    extends: 
+      file: ./traefik/compose.yaml
+      service: socket-proxy
+
+  traefik-kop:
+    extends:
+      file: ./traefik-kop/compose.yaml
+      service: traefik-kop

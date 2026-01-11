@@ -87,8 +87,35 @@ networks:
     driver_opts:
       encrypted: "true"
 
-# Include Agent services with server
-include:
-  - ./traefik/compose.yaml
-  - ./redis-server/compose.yaml
-  - ./traefik-kop/compose.yaml
+services:
+  traefik:
+    extends: 
+      file: ./traefik/compose.yaml
+      service: traefik
+    volumes:
+      - "./traefik/traefik-config/traefik-redis.yml:/etc/traefik/traefik.yml"
+
+  error-pages:
+    extends: 
+      file: ./traefik/compose.yaml
+      service: error-pages
+
+  socket-proxy:
+    extends: 
+      file: ./traefik/compose.yaml
+      service: socket-proxy
+
+  redis:
+    extends:
+      file: ./redis/compose.yaml
+      service: redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    networks:
+      - frontend
+
+  traefik-kop:
+    extends:
+      file: ./traefik-kop/compose.yaml
+      service: traefik-kop
