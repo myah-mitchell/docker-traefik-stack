@@ -156,7 +156,6 @@ certificatesResolvers:
   letsencrypt:
     acme:
       storage: /etc/traefik/certs/acme-prod.json
-      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
       dnsChallenge:
         provider: cloudflare
         delayBeforeCheck: 10 #Optional to wait x second before checking with the DNS Server
