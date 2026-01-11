@@ -98,6 +98,11 @@ services:
       file: ./traefik/compose.yaml
       service: error-pages
 
+  logrotate:
+    extends: 
+      file: ./traefik/compose.yaml
+      service: logrotate
+
   socket-proxy:
     extends: 
       file: ./traefik/compose.yaml
@@ -107,3 +112,18 @@ services:
     extends:
       file: ./traefik-kop/compose.yaml
       service: traefik-kop
+
+  vmagent:
+    extends:
+      file: ./victoriametrics/compose.yaml
+      service: vmagent
+
+  vlagent:
+    extends:
+      file: ./victoriametrics/compose.yaml
+      service: vlagent
+
+  vector:
+    extends:
+      file: ./victoriametrics/compose.yaml
+      service: vector

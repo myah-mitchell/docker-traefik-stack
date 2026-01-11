@@ -100,6 +100,11 @@ services:
       file: ./traefik/compose.yaml
       service: error-pages
 
+  logrotate:
+    extends: 
+      file: ./traefik/compose.yaml
+      service: logrotate
+
   socket-proxy:
     extends: 
       file: ./traefik/compose.yaml
@@ -112,3 +117,18 @@ services:
     command: redis-server --appendonly yes --replicaof ${REDIS_SERVER} 6379 --masterauth ${REDIS_PASSWORD}
     networks:
       - frontend
+
+  vmagent:
+    extends:
+      file: ./victoriametrics/compose.yaml
+      service: vmagent
+
+  vlagent:
+    extends:
+      file: ./victoriametrics/compose.yaml
+      service: vlagent
+
+  vector:
+    extends:
+      file: ./victoriametrics/compose.yaml
+      service: vector

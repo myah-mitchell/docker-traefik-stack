@@ -1,0 +1,177 @@
+###############################################################################
+# Start of default configs
+###############################################################################
+
+  #####################################
+  # Container base defaults
+  #####################################
+  # Max Usage Limits
+x-limits: &limits
+  mem_limit: ${MEM_LIMIT:-2G} # Override per container if necessary
+  memswap_limit: ${MEM_SWAP_LIMIT:-2.5G}
+  mem_reservation: ${MEM_RESERVATION:-64M}
+  pids_limit: ${PIDS_LIMIT:-200}
+  cpus: ${CPUS_LIMIT:-2} # Set below the total number of cores, for example 3.5 for 4 cores
+
+  # Restart Settings
+x-restart: &restart
+  stop_grace_period: ${RESTART_GRACE:-1m}
+  restart: ${RESTART_MODE:-unless-stopped}
+
+  # Configure security
+x-security: &security
+  security_opt:
+   - no-new-privileges=${NO_NEW_PRIVILEGES:-true}
+
+  # Configure User
+x-user: &user
+  user: ${PUID:-1000}:${PGID:-1000}
+
+  # Configure Logging
+x-logging: &logging
+  logging:
+    options:
+      max-size: ${LOG_MAX_SIZE:-10m}
+      max-file: ${LOG_MAX_FILE:-3}
+
+  ## All base defaults in one
+x-base: &default-base
+  <<: [*limits, *restart, *security, *user, *logging]
+
+  #####################################
+  # Container healthcheck defaults
+  #####################################
+x-healthcheck: &default_healthcheck
+  interval: ${HEALTH_INTERVAL:-60s}
+  timeout: ${HEALTH_TIMEOUT:-10s}
+  retries: ${HEALTH_RETRIES:-5}
+  start_period: ${HEALTH_START:-10s}
+  
+  #####################################
+  # Container environment defaults
+  #####################################
+x-environment-tz: &environment_tz
+  TZ: ${TZ:-America/Chicago}
+
+x-environment-user: &environment_user
+  PUID: ${PUID:-1000}
+  PGID: ${PGID:-1000}
+
+  ## All environment defaults in one
+x-environment: &default_environment
+  <<: [*environment_tz, *environment_user]
+
+###############################################################################
+# Start of stack config
+###############################################################################
+# Project Name
+name: ${PROJECT_NAME}
+
+networks:
+#  proxy:
+#    name: ${PROXY_NETWORK}
+#    external: true
+  frontend:
+    name: ${PROJECT_NAME}_frontend
+    internal: false
+    driver_opts:
+      encrypted: "true"
+  backend:
+    name: ${PROJECT_NAME}_backend
+    internal: true
+    driver_opts:
+      encrypted: "true"
+#  socket_proxy:
+#    name: ${PROJECT_NAME}_socket_proxy
+#    internal: true
+#    driver_opts:
+#      encrypted: "true"
+
+services:
+
+  #  Log collector.
+  #  It listens for syslog and other remote connections
+  #  And forwards them to --remoteWrite.url
+  vlagent:
+    <<: [*limits, *restart, *security, *user, *logging]
+    image: victoriametrics/vlagent:${VLAGENT_VERSION:-latest}
+    hostname: ${PROJECT_NAME}-vlagent.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}  
+    container_name: ${PROJECT_NAME}-vlagent
+    command:
+      - '--syslog.listenAddr.tcp=0.0.0.0:8094'
+      - '--remoteWrite.tmpDataPath=/vlagent'
+      - '--remoteWrite.maxDiskUsagePerURL=${VICTORIA_DISK_USAGE:-200MB}'
+      - "--remoteWrite.basicAuth.username=${VMAUTH_USER}"
+      - "--remoteWrite.basicAuth.password=${VMAUTH_PASS}"
+      - "--remoteWrite.url=https://victoriametrics-auth.${DOMAIN_NAME}/insert/native"
+    #ports:
+    #  - 9429:9429
+    environment:
+      <<: [*environment_tz, *environment_user]
+    volumes:
+      - ${DOCKER_VOLUMES}/${PROJECT_NAME}/vlagent-data:/vlagent
+    networks:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9429/health"]
+      <<: *default_healthcheck
+
+  #  Metrics collector.
+  #  It scrapes targets defined in --promscrape.config
+  #  And forward them to --remoteWrite.url
+  vmagent:
+    <<: [*limits, *restart, *security, *user, *logging]
+    image: victoriametrics/vmagent:${VMAGENT_VERSION:-latest}
+    hostname: ${PROJECT_NAME}-vmagent.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}  
+    container_name: ${PROJECT_NAME}-vmagent
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "--remoteWrite.tmpDataPath=/vmagent"
+      - '--remoteWrite.maxDiskUsagePerURL=${VICTORIA_DISK_USAGE:-200MB}'
+      - "--remoteWrite.basicAuth.username=${VMAUTH_USER}"
+      - "--remoteWrite.basicAuth.password=${VMAUTH_PASS}"
+      - "--remoteWrite.url=https://victoriametrics-auth.${DOMAIN_NAME}/api/v1/write"
+    #ports:
+    #  - 8429:8429
+    environment:
+      <<: [*environment_tz, *environment_user]
+      SERVER_ADDRESS: ${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}
+    volumes:
+      - ./vmagent-config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${DOCKER_VOLUMES}/${PROJECT_NAME}/vmagent-data:/vmagent
+    networks:
+      - frontend
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8429/health"]
+      <<: *default_healthcheck
+
+  # vector is logs collector. It collects logs according to vector.yml
+  # and forwards them to VictoriaLogs
+  vector:
+    #<<: [*limits, *restart, *security, *user, *logging]
+    <<: [*limits, *restart, *security, *logging]
+    image: docker.io/timberio/vector:${VECTOR_VERSION:-latest-distroless-libc}
+    hostname: ${PROJECT_NAME}-vector.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}  
+    container_name: ${PROJECT_NAME}-vector
+    #ports:
+    #  - "8686:8686"
+    environment:
+      <<: [*environment_tz, *environment_user]
+    volumes:
+      - ./vector-config/vector.yml:/etc/vector/vector.yaml:ro
+      - ${DOCKER_VOLUMES}/${PROJECT_NAME}/vector-data:/var/lib/vector
+      - ${DOCKER_VOLUMES}/${PROJECT_NAME}/traefik-logs:/var/log/traefik/:ro
+    labels: ## Komodo Labels
+      - "komodo.skip" # Prevent Komodo from stopping with StopAllContainers
+    networks:
+      - backend
+    depends_on:
+      vlagent:
+        condition: service_healthy
+      vmagent:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/bin/vector", "validate", "--skip-healthchecks"]
+      <<: *default_healthcheck
