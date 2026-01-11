@@ -70,7 +70,7 @@ name: ${PROJECT_NAME}
 networks:
   proxy:
     name: ${PROXY_NETWORK}
-    internal: true
+    external: true
   frontend:
     name: ${PROJECT_NAME}_frontend
     internal: false
@@ -104,19 +104,11 @@ services:
     extends: 
       file: ./traefik/compose.yaml
       service: socket-proxy
-
+  
   redis:
     extends:
       file: ./redis/compose.yaml
       service: redis
-    command: redis-server --appendonly yes #--requirepass ${REDIS_PASSWORD}
-    #command: redis-server --appendonly yes --replicaof redis 6379 --masterauth ${REDIS_PASSWORD}
-    ports:
-      - "6379:6379"
+    command: redis-server --appendonly yes --replicaof ${REDIS_SERVER} 6379 --masterauth ${REDIS_PASSWORD}
     networks:
       - frontend
-
-  traefik-kop:
-    extends:
-      file: ./traefik-kop/compose.yaml
-      service: traefik-kop
