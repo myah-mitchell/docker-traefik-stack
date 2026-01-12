@@ -2,11 +2,11 @@ global:
   scrape_interval: 10s
 
 scrape_configs:
-- job_name: vmagent
+- job_name: vmagent-traefik
   static_configs:
     - targets:
       - traefik-vmagent.%{SERVER_ADDRESS}:8429
-- job_name: vlagent
+- job_name: vlagent-traefik
   static_configs:
     - targets:
       - traefik-vlagent.%{SERVER_ADDRESS}:9429
