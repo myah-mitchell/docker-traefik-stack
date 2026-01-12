@@ -13,7 +13,7 @@ global:
 ################################################################
 log:
   level: INFO # DEBUG, INFO, WARNING, ERROR, CRITICAL
-  #format: common # common, json, logfmt
+  format: json # common, json, logfmt
   #noColor: true # Recommended to be true when using common
   #maxSize: 100 # In megabytes
   #compress: true # gzip compression when rotating

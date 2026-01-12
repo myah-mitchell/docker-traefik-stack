@@ -23,18 +23,34 @@ log:
 # Access logs - https://doc.traefik.io/traefik/observability/access-logs/
 ################################################################
 accesslog:
-  format: common # common, json, logfmt
-  addInternals: true  # things like ping@internal
+  format: json # common, json, logfmt
+  addInternals: false  # things like ping@internal
   filePath: /etc/traefik/log/access.log # In the Common Log Format (CLF) by default
-  bufferingSize: 100 # Number of log lines
+  bufferingSize: 10 # Number of log lines
   fields:
-    names:
-      StartUTC: drop  # Write logs in Container Local Time instead of UTC
-  filters:
-    statusCodes:
-      - "204-299"
-      - "400-499"
-      - "500-599"
+    defaultMode: keep
+    headers:
+      defaultMode: keep
+      names:
+        # Redact the Cookie
+        Cookie: redact
+        Set-Cookie: redact
+        # Drop the Authorization header value
+        Authorization: drop
+
+################################################################
+# Metrics - https://doc.traefik.io/traefik/reference/install-configuration/observability/metrics/
+################################################################
+metrics:
+  prometheus:
+    addRoutersLabels: true
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+    headerLabels:
+      useragent: User-Agent
 
 ################################################################
 # API and Dashboard

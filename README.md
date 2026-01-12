@@ -8,10 +8,10 @@ Note this is still early in design and lots of this will change before being mer
 mkdir -p /opt/docker/volumes/traefik/traefik-logs
 mkdir -p /opt/docker/volumes/traefik/cert-data
 mkdir -p /opt/docker/volumes/traefik/traefik-plugins
-mkdir -p /opt/docker/volumes/traefik/vlagent
-mkdir -p /opt/docker/volumes/traefik/vmagent
-mkdir -p /opt/docker/volumes/traefik/vector
-chmod 750 /opt/docker/volumes/traefik/  k
+mkdir -p /opt/docker/volumes/traefik/vlagent-data
+mkdir -p /opt/docker/volumes/traefik/vmagent-data
+mkdir -p /opt/docker/volumes/traefik/vector-data
+sudo chmod 750 /opt/docker/volumes/traefik/
 sudo chown $USER:101000 /opt/docker/volumes/traefik
 sudo chown 101000:101000 /opt/docker/volumes/traefik/*
 ```
