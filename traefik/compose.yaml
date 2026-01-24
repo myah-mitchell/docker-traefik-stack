@@ -185,7 +185,7 @@ services:
       MAX_BACKUPS: 3
       DELAYCOMPRESS: "true"
     volumes:
-      - "${DOCKER_VOLUMES}/${PROJECT_NAME}/traefik-logs:/log/"
+      - "${DOCKER_VOLUMES}/${PROJECT_NAME}/traefik-logs:/logs/"
     networks:
       - backend
     healthcheck:
