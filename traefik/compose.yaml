@@ -182,7 +182,7 @@ services:
       LOGROTATE_TRIGGER_INTERVAL: daily
       LOGROTATE_TRIGGER_SIZE: 100M
       LOGROTATE_MAX_BACKUPS: 3
-      CRON_SCHEDULE: "* * * * *"
+      CRON_SCHEDULE: "*/5 * * * *"
       CRON_LOG_LEVEL: 4  # see https://unix.stackexchange.com/a/414010/378036
     volumes:
       - "${DOCKER_VOLUMES}/${PROJECT_NAME}/traefik-logs:/logs/"
