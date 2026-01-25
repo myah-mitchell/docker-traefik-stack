@@ -98,6 +98,7 @@ services:
     hostname: ${PROJECT_NAME}-vlagent.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}  
     container_name: ${PROJECT_NAME}-vlagent
     command:
+      - "--loggerFormat=json"
       #- '--syslog.listenAddr.tcp=0.0.0.0:8094'
       - '--remoteWrite.tmpDataPath=/vlagent'
       - '--remoteWrite.maxDiskUsagePerURL=${VLAGENT_DISK_USAGE:-200MB}'
@@ -126,6 +127,7 @@ services:
     hostname: ${PROJECT_NAME}-vmagent.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}  
     container_name: ${PROJECT_NAME}-vmagent
     command:
+      - "--loggerFormat=json"
       - "--promscrape.config=/etc/prometheus/prometheus.yml"
       - "--remoteWrite.tmpDataPath=/vmagent"
       - '--remoteWrite.maxDiskUsagePerURL=${VMAGENT_DISK_USAGE:-200MB}'
@@ -159,6 +161,8 @@ services:
     #  - "8686:8686"
     environment:
       <<: [*environment_tz, *environment_user]
+      VECTOR_LOG_FORMAT: json
+      VECTOR_LOG: info
     volumes:
       - ./vector-config/vector.yml:/etc/vector/vector.yaml:ro
       - ${DOCKER_VOLUMES}/${PROJECT_NAME}/vector-data:/var/lib/vector
