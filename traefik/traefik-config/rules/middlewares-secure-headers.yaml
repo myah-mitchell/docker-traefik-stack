@@ -12,27 +12,42 @@ http:
     ################################################################
     middlewares-secure-headers:
       headers:
+        customResponseHeaders: # field names are case-insensitive
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex,"
+          server: "" # prevent version disclosure
+          X-Powered-By: "" # prevent version disclosure
+          X-Forwarded-Proto: "https"
+          #Permissions-Policy: "accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), gamepad=(), geolocation=(), gyroscope=(), hid=(), identity-credentials-get=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), otp-credentials=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), storage-access=(), usb=(), web-share=(), window-management=(), xr-spatial-tracking=()"
+          #Cross-Origin-Embedder-Policy: "unsafe-none"
+          #Cross-Origin-Opener-Policy: "same-origin"
+          #Cross-Origin-Resource-Policy: "same-site"
+          #X-Permitted-Cross-Domain-Policies: "none"
+
+        sslProxyHeaders:
+          X-Forwarded-Proto: "https"
+        hostsProxyHeaders:
+          - "X-Forwarded-Host"
+          - "X-Forwarded-Server"
+        #customRequestHeaders:
+        #  X-Forwarded-Proto: "https"
+
+        frameDeny: true # Prevent clickjacking by disallowing site to be loaded inside iframes 
+        customFrameOptionsValue: SAMEORIGIN # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
+
+        contentTypeNosniff: true # X-Content-Type-Options
+        browserXssFilter: true # X-XSS-Protection; deprecated
+        referrerPolicy: "strict-origin-when-cross-origin"
+
+        # CORS Headers
+        # Set the allowed methods during requests
         accessControlAllowMethods:
           - GET
           - OPTIONS
           - PUT
         accessControlMaxAge: 100
-        hostsProxyHeaders:
-          - "X-Forwarded-Host"
-        stsSeconds: 63072000
-        stsIncludeSubdomains: true
-        stsPreload: true
-        forceSTSHeader: true
-        customFrameOptionsValue: "allow-from https://{{env "DOMAIN_NAME"}}" #CSP takes care of this but may be needed for organizr.
-        # customFrameOptionsValue: SAMEORIGIN # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options
-        contentTypeNosniff: true
-        browserXssFilter: true
-        # sslForceHost: true # add sslHost to all of the services
-        # sslHost: "{{env "DOMAINNAME"}}"
-        referrerPolicy: "same-origin"
-        permissionsPolicy: "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
-        customResponseHeaders:
-          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex,"
-          server: ""
-          # https://community.traefik.io/t/how-to-make-websockets-work-with-traefik-2-0-setting-up-rancher/1732
-          # X-Forwarded-Proto: "https"
+
+        # HTTP-Strict-Transport-Security (HSTS)
+        stsSeconds: 63072000 
+        stsIncludeSubdomains: true 
+        stsPreload: true 
+        forceSTSHeader: true 
