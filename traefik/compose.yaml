@@ -173,23 +173,23 @@ services:
 
   logrotate:
     <<: [*limits, *restart, *security, *logging]
-    image: samuelrunggaldier/logrotate:${LOGROTATE_VERSION:-latest}
+    image: vegardit/traefik-logrotate:${LOGROTATE_VERSION:-latest}
     hostname: ${PROJECT_NAME}-logrotate.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}
     container_name: ${PROJECT_NAME}-logrotate
-    stop_grace_period: 5s
     environment:
       <<: [*environment_tz, *environment_user]
-      LOGS_PATH: "/logs/*.log"
-      TRIGGER_INTERVAL: daily
-      MAX_SIZE: 100M
-      MAX_BACKUPS: 3
-      DELAYCOMPRESS: "true"
+      LOGROTATE_LOGS: "/logs/*.log"
+      LOGROTATE_TRIGGER_INTERVAL: daily
+      LOGROTATE_TRIGGER_SIZE: 100M
+      LOGROTATE_MAX_BACKUPS: 3
+      CRON_SCHEDULE: "* * * * *"
+      CRON_LOG_LEVEL: 4  # see https://unix.stackexchange.com/a/414010/378036
     volumes:
       - "${DOCKER_VOLUMES}/${PROJECT_NAME}/traefik-logs:/logs/"
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "ping", "-c", "1", "127.0.0.1"]
+      test: ["CMD", "logrotate", "--version"]
       <<: *default_healthcheck
 
   socket-proxy:
