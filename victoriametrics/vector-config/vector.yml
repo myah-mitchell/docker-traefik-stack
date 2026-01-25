@@ -12,6 +12,7 @@ sources:
     type: "file"
     include:
       - "/var/log/traefik/access.log"
+      - "/var/log/traefik/access.log.1"
     # Use "beginning" to ensure we capture files created during rotation.
     # NOTE: Vector uses checkpoints in 'data_dir' to remember its position.
     # It will NOT re-ingest old logs on restart unless the data_dir is deleted.
