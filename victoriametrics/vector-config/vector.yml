@@ -5,6 +5,9 @@ api:
   address: "0.0.0.0:8686"
 
 sources:
+  # -------------------------------------------------------------------------
+  # Source: Traefik Logs
+  # -------------------------------------------------------------------------
   traefik_logs:
     type: "file"
     include:
@@ -14,6 +17,7 @@ sources:
     # It will NOT re-ingest old logs on restart unless the data_dir is deleted.
     read_from: "beginning"
 
+  # Internal self-monitoring metrics for Vector
   vector_metrics:
     type: internal_metrics
 
@@ -191,12 +195,17 @@ sinks:
     type: "elasticsearch"
     inputs: ["parse_traefik"]
     endpoints: [http://vlagent:9429/insert/elasticsearch/]
-    mode: "bulk"
+    mode: "bulk" # Use Bulk API for performance (compresses many logs into one request)
     api_version: v8
     compression: "gzip"
     healthcheck:
       enabled: false 
-    
+
+    # Batching: Send every 1MB or every 1 second, whichever comes first.
+    batch:
+      max_bytes: 1048576
+      timeout_secs: 1
+
     # URL Query Parameters for Stream Identification
     query:
       # Fields that define the "Stream" (Service/App).
@@ -213,6 +222,7 @@ sinks:
     bulk:
       index: "traefik-access"
 
+  # Sink: VictoriaMetrics (Internal Vector Health)
   victoriametrics:
     type: prometheus_remote_write
     endpoint: http://vmagent:8429/api/v1/write
