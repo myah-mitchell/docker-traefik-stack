@@ -118,13 +118,14 @@ transforms:
         # -----------------------------------------------------------------------
         # 4. Message Construction
         # -----------------------------------------------------------------------
-        # Build a concise summary string for log viewers (e.g. "GET /api 200 (5ms)")
+        # Build a concise summary string for log viewers (e.g. "GET 200 (5ms) example.com /api ")
         duration_ms = .Duration / 1000000.0
         
         msg_parts = [
           .RequestMethod || "-",
-          .RequestPath || "-",
           to_string(.DownstreamStatus),
+          .RequestAddr || "-",
+          .RequestPath || "-",
           "(" + to_string(duration_ms) + "ms)"
         ]
 
