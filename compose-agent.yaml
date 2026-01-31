@@ -98,15 +98,20 @@ services:
       file: ./traefik/compose.yaml
       service: error-pages
 
+  socket-proxy:
+    extends: 
+      file: ./traefik/compose.yaml
+      service: socket-proxy
+
   logrotate:
     extends: 
       file: ./traefik/compose.yaml
       service: logrotate
 
-  socket-proxy:
+  logrotate-socket-proxy:
     extends: 
       file: ./traefik/compose.yaml
-      service: socket-proxy
+      service: logrotate-socket-proxy
 
   traefik-kop:
     extends:

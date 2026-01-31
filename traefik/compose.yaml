@@ -301,30 +301,6 @@ services:
       #test: ["CMD", "", ""]
       <<: *default_healthcheck
 
-  logrotate:
-    <<: [*limits, *restart, *security, *logging]
-    image: vegardit/traefik-logrotate:${LOGROTATE_VERSION:-latest}
-    hostname: ${PROJECT_NAME}-logrotate.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}
-    container_name: ${PROJECT_NAME}-logrotate
-    environment:
-      <<: [*environment_tz, *environment_user]
-      LOGROTATE_LOGS: "/logs/*.log"
-      LOGROTATE_TRIGGER_INTERVAL: daily  # rotate daily, must be one of: daily, weekly, monthly, yearly
-      LOGROTATE_TRIGGER_SIZE: 100M       # rotate if log file size reaches 50MB
-      LOGROTATE_MAX_BACKUPS: 3           # keep 14 backup copies per rotated log file
-      LOGROTATE_FILE_MODE: 0644          # file mode of the rotated file
-      LOGROTATE_FILE_USER: 1000          # owning user of the rotated file
-      LOGROTATE_FILE_GROUP: 1000         # owning group of the rotated file
-      CRON_SCHEDULE: "*/5 * * * *"
-      CRON_LOG_LEVEL: 4  # see https://unix.stackexchange.com/a/414010/378036
-    volumes:
-      - "${DOCKER_VOLUMES}/${PROJECT_NAME}/traefik-logs:/logs/"
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD", "logrotate", "--version"]
-      <<: *default_healthcheck
-
   socket-proxy:
     <<: [*limits, *restart, *security, *logging]
     image: lscr.io/linuxserver/socket-proxy:${SOCKET_PROXY_VERSION:-latest}
@@ -366,6 +342,78 @@ services:
       - socket_proxy
     userns_mode: "host"
     read_only: true
+    tmpfs:
+      - /run
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:2375/version"]
+      <<: *default_healthcheck
+
+  logrotate:
+    <<: [*limits, *restart, *security, *logging]
+    image: vegardit/traefik-logrotate:${LOGROTATE_VERSION:-latest}
+    hostname: ${PROJECT_NAME}-logrotate.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}
+    container_name: ${PROJECT_NAME}-logrotate
+    environment:
+      <<: [*environment_tz, *environment_user]
+      LOGROTATE_LOGS: "/logs/*.log"
+      LOGROTATE_TRIGGER_INTERVAL: weekly  # rotate daily, must be one of: daily, weekly, monthly, yearly
+      LOGROTATE_TRIGGER_SIZE: 50M       # rotate if log file size reaches 50MB
+      LOGROTATE_MAX_BACKUPS: 3           # keep 14 backup copies per rotated log file
+      LOGROTATE_FILE_USER: 1000          # owning user of the rotated file
+      LOGROTATE_FILE_GROUP: 1000         # owning group of the rotated file
+      CRON_SCHEDULE: "*/5 * * * *"
+      CRON_LOG_LEVEL: 4  # see https://unix.stackexchange.com/a/414010/378036
+      DOCKER_HOST: tcp://${PROJECT_NAME}-logrotate-socket-proxy:2375
+    volumes:
+      - "${DOCKER_VOLUMES}/${PROJECT_NAME}/traefik-logs:/logs/"
+    networks:
+      - backend
+      - socket_proxy
+    healthcheck:
+      test: ["CMD", "logrotate", "--version"]
+      <<: *default_healthcheck
+
+  logrotate-socket-proxy:
+    <<: [*limits, *restart, *security, *logging]
+    image: lscr.io/linuxserver/socket-proxy:${SOCKET_PROXY_VERSION:-latest}
+    hostname: ${PROJECT_NAME}-logrotate-socket-proxy.${SERVER_NAME}.${SUB_DOMAIN_NAME}${DOMAIN_NAME}
+    container_name: "${PROJECT_NAME}-logrotate-socket-proxy"
+    environment:
+      <<: [*environment_tz, *environment_user]
+      ALLOW_START: 0 #optional
+      ALLOW_STOP: 0 #optional
+      ALLOW_RESTARTS: 0 #optional
+      AUTH: 0 #optional
+      BUILD: 0 #optional
+      COMMIT: 0 #optional
+      CONFIGS: 0 #optional
+      CONTAINERS: 1 #optional
+      DISABLE_IPV6: 0 #optional
+      DISTRIBUTION: 0 #optional
+      EVENTS: 0 #optional
+      EXEC: 0 #optional
+      IMAGES: 0 #optional
+      INFO: 1 #optional
+      LOG_LEVEL: info #optional
+      NETWORKS: 0 #optional
+      NODES: 0 #optional
+      PING: 1 #optional
+      PLUGINS: 0 #optional
+      POST: 1 #optional
+      SECRETS: 0 #optional
+      SERVICES: 0 #optional
+      SESSION: 0 #optional
+      SWARM: 0 #optional
+      SYSTEM: 0 #optional
+      TASKS: 0 #optional
+      VERSION: 1 #optional
+      VOLUMES: 0 #optional
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+    networks:
+      - socket_proxy
+    userns_mode: "host"
+    #read_only: true
     tmpfs:
       - /run
     healthcheck:
